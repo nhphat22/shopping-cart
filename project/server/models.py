@@ -8,14 +8,12 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     userName = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
-    registered_on = db.Column(db.DateTime, nullable=False)
 
-    def __init__(self, userName, password, admin=False):
+    def __init__(self, userName, password):
         self.userName = userName
         self.password = bcrypt.generate_password_hash(
             password, app.config.get('BCRYPT_LOG_ROUNDS')
         ).decode()
-        self.admin = admin
 
     def encode_auth_token(self, user_id):
         """
@@ -52,6 +50,7 @@ class User(db.Model):
             return 'Signature expired. Please log in again.'
         except jwt.InvalidTokenError:
             return 'Invalid token. Please log in again.'
+
 class BlacklistToken(db.Model):
     """
     Token Model for storing JWT tokens
