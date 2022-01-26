@@ -6,7 +6,6 @@ from project.server.models import User, BlacklistToken
 
 auth_blueprint = Blueprint('auth', __name__)
 
-
 class LoginAPI(MethodView):
     """
     User Login Resource
