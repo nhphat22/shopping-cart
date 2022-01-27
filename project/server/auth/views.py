@@ -1,11 +1,81 @@
 from flask import Blueprint, request, make_response, jsonify
 from flask.views import MethodView
+from functools import wraps
+import jwt
+# from  werkzeug.security import generate_password_hash, check_password_hash
 
-from project.server import bcrypt, db
+# from project.server import app, bcrypt, db
+from project.server.alchemy import db
 from project.server.models import User, BlacklistToken
 
 auth_blueprint = Blueprint('auth', __name__)
 
+# decorator for verifying the JWT
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        # jwt is passed in the request header
+        if 'x-access-token' in request.headers:
+            token = request.headers['x-access-token']
+        # return 401 if token is not passed
+        if not token:
+            return jsonify({'message' : 'Token is missing !!'}), 401
+  
+        try:
+            # decoding the payload to fetch the stored details
+            data = jwt.decode(token, 'SECRET_KEY')
+            current_user = User.query\
+                .filter_by(public_id = data['public_id'])\
+                .first()
+        except:
+            return jsonify({
+                'message' : 'Token is invalid !!'
+            }), 401
+        # returns the current logged in users contex to the routes
+        return  f(current_user, *args, **kwargs)
+  
+    return decorated
+
+class RegisterAPI(MethodView):
+    """
+    User Registration Resource
+    """
+
+    def post(self):
+        # get the post data
+        post_data = request.get_json()
+        # check if user already exists
+        user = User.query.filter_by(userName=post_data.get('userName')).first()
+        if not user:
+            try:
+                user = User(
+                    userName=post_data.get('userName'),
+                    password=post_data.get('password')
+                )
+                # insert the user
+                db.session.add(user)
+                db.session.commit()
+                # generate the auth token
+                auth_token = user.encode_auth_token(user.id)
+                responseObject = {
+                    'status': 'success',
+                    'message': 'Successfully registered.',
+                    'auth_token': auth_token.decode()
+                }
+                return make_response(jsonify(responseObject)), 201
+            except Exception as e:
+                responseObject = {
+                    'status': 'fail',
+                    'message': 'Some error occurred. Please try again.'
+                }
+                return make_response(jsonify(responseObject)), 401
+        else:
+            responseObject = {
+                'status': 'fail',
+                'message': 'User already exists. Please Log in.',
+            }
+            return make_response(jsonify(responseObject)), 202
 class LoginAPI(MethodView):
     """
     User Login Resource
@@ -18,9 +88,10 @@ class LoginAPI(MethodView):
             user = User.query.filter_by(
                 userName=post_data.get('userName')
             ).first()
-            if user and bcrypt.check_password_hash(
-                user.password, post_data.get('password')
-            ):
+            # if user and bcrypt.check_password_hash(
+            #     user.password, post_data.get('password')
+            # ):
+            if user:
                 auth_token = user.encode_auth_token(user.id)
                 if auth_token:
                     responseObject = {
@@ -42,7 +113,6 @@ class LoginAPI(MethodView):
                 'message': 'Try again'
             }
             return make_response(jsonify(responseObject)), 500
-
 
 class UserAPI(MethodView):
     """
@@ -132,11 +202,17 @@ class LogoutAPI(MethodView):
             return make_response(jsonify(responseObject)), 403
 
 # define the API resources
+registration_view = RegisterAPI.as_view('register_api')
 login_view = LoginAPI.as_view('login_api')
 user_view = UserAPI.as_view('user_api')
 logout_view = LogoutAPI.as_view('logout_api')
 
 # add Rules for API Endpoints
+auth_blueprint.add_url_rule(
+    '/auth/register',
+    view_func=registration_view,
+    methods=['POST']
+)
 auth_blueprint.add_url_rule(
     '/auth/login',
     view_func=login_view,

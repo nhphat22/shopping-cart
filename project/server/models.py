@@ -1,6 +1,7 @@
 import jwt
 from sqlalchemy import Integer
-from project.server import app, db, bcrypt
+# from project.server import app
+from project.server.alchemy import db
 
 class User(db.Model):
     """ User Model for storing user related details """
@@ -15,9 +16,10 @@ class User(db.Model):
 
     def __init__(self, userName, password, firstname='', lastName='', email='email@gmail.com'):
         self.userName = userName
-        self.password = bcrypt.generate_password_hash(
-            password, app.config.get('BCRYPT_LOG_ROUNDS')
-        ).decode()
+        # self.password = bcrypt.generate_password_hash(
+        #     password, app.config.get('BCRYPT_LOG_ROUNDS')
+        # ).decode()
+        self.password = password
         self.firstname = firstname
         self.lastName = lastName
         self.email = email
@@ -33,7 +35,7 @@ class User(db.Model):
             }
             return jwt.encode(
                 payload,
-                app.config.get('SECRET_KEY'),
+                'SECRET_KEY',
                 algorithm='HS256'
             )
         except Exception as e:
@@ -49,7 +51,7 @@ class User(db.Model):
         try:
             payload = jwt.decode(
                 auth_token, 
-                app.config.get('SECRET_KEY'),
+                'SECRET_KEY',
                 algorithms='HS256'
             )
             is_blacklisted_token = BlacklistToken.check_blacklist(auth_token)
