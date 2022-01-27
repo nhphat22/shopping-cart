@@ -1,7 +1,6 @@
 import jwt
-from sqlalchemy import Integer
-# from project.server import app
 from project.server.database import db
+from werkzeug.security import generate_password_hash
 
 class User(db.Model):
     """ User Model for storing user related details """
@@ -16,9 +15,7 @@ class User(db.Model):
 
     def __init__(self, userName, password, firstname='', lastName='', email='email@gmail.com'):
         self.userName = userName
-        # self.password = bcrypt.generate_password_hash(
-        #     password, app.config.get('BCRYPT_LOG_ROUNDS')
-        # ).decode()
+        self.password = generate_password_hash(password)
         self.password = password
         self.firstname = firstname
         self.lastName = lastName
@@ -88,31 +85,3 @@ class BlacklistToken(db.Model):
             return True
         else:
             return False
-
-class Product(db.Model):
-    """ Product Model for storing product related details """
-    __tablename__ = "products"
-
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(255), nullable=False)
-    price = db.Column(db.Integer, nullable=False)
-
-    def __init__(self, name, price):
-        self.name = name
-        self.price = price
-
-class Cart(db.Model):
-    """ Cart Model for storing cartItems and subtotal """
-    __tablename__ = "carts"
-
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    cartItems = db.Column(db.ARRAY(Integer), nullable=False)
-    total = db.Column(db.Float, nullable=False)
-    vat = db.Column(db.Float, nullable=False)
-    subtotal = db.Column(db.Float, nullable=False)
-
-    def __init__(self, cartItems):
-        self.cartItems = cartItems
-        self.total = sum(cartItems) #!!!!!
-        self.vat = self.total * 0.1
-        self.subtotal = self.total + self.vat

@@ -2,11 +2,10 @@ from flask import Blueprint, request, make_response, jsonify
 from flask.views import MethodView
 from functools import wraps
 import jwt
-# from  werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash
 
-# from project.server import app, bcrypt, db
 from project.server.database import db
-from project.server.models import User, BlacklistToken
+from project.server.models.user_model import User, BlacklistToken
 
 auth_blueprint = Blueprint('auth', __name__)
 
@@ -41,7 +40,6 @@ class RegisterAPI(MethodView):
     """
     User Registration Resource
     """
-
     def post(self):
         # get the post data
         post_data = request.get_json()
@@ -57,7 +55,7 @@ class RegisterAPI(MethodView):
                 db.session.add(user)
                 db.session.commit()
                 # generate the auth token
-                auth_token = user.encode_auth_token(user.id)
+                auth_token = user.encode_auth_token(user.id).encode("utf-8")
                 responseObject = {
                     'status': 'success',
                     'message': 'Successfully registered.',
@@ -88,11 +86,10 @@ class LoginAPI(MethodView):
             user = User.query.filter_by(
                 userName=post_data.get('userName')
             ).first()
-            # if user and bcrypt.check_password_hash(
-            #     user.password, post_data.get('password')
-            # ):
-            if user:
-                auth_token = user.encode_auth_token(user.id)
+            if user and check_password_hash(
+                user.password, post_data.get('password')
+            ):
+                auth_token = user.encode_auth_token(user.id).encode("utf-8")
                 if auth_token:
                     responseObject = {
                         'status': 'success',
