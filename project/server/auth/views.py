@@ -5,7 +5,7 @@ import jwt
 # from  werkzeug.security import generate_password_hash, check_password_hash
 
 # from project.server import app, bcrypt, db
-from project.server.alchemy import db
+from project.server.database import db
 from project.server.models import User, BlacklistToken
 
 auth_blueprint = Blueprint('auth', __name__)

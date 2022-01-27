@@ -1,7 +1,7 @@
 import jwt
 from sqlalchemy import Integer
 # from project.server import app
-from project.server.alchemy import db
+from project.server.database import db
 
 class User(db.Model):
     """ User Model for storing user related details """

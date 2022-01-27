@@ -6,7 +6,7 @@ from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 
 from project.server import app
-from project.server.alchemy import db
+from project.server.database import db
 
 COV = coverage.coverage(
     branch=True,
