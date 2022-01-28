@@ -21,5 +21,5 @@ class CartItem(db.Model):
         self.subtotal = price * quantity 
     
     def update_quantity(self, quantity):
-        self.quantity = quantity
+        self.quantity += quantity
         self.subtotal = self.price * quantity

@@ -32,12 +32,21 @@ class AddToCartAPI(MethodView):
                 return make_response(jsonify(responseObject)), 401
         else:
             product = Product.query.filter_by(name=post_data.get('product')).first()
+            cartItem = CartItem.query.filter_by(product_id=product.id).first()
             if not product:
                 responseObject = {
                     'status': 'fail',
                     'message': 'We dont do that here. Choose another...'
                 }
                 return make_response(jsonify(responseObject)), 202
+            elif cartItem:
+                cartItem.update_quantity(post_data.get('quantity'))
+                db.session.commit()
+                responseObject = {
+                        'status': 'success',
+                        'message': 'Quantity of your product has updated!'
+                    }
+                return make_response(jsonify(responseObject)), 201
             else:
                 try: 
                     cartItem = CartItem(
