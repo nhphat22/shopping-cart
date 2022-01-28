@@ -1,10 +1,9 @@
 from project.server.database import db
-from sqlalchemy import Integer
 
 
-class Cart(db.Model):
+class CartItem(db.Model):
     """ CartItem Model for storing products in cart """
-    __tablename__ = "carts"
+    __tablename__ = "cartitems"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     product_id = db.Column(db.Integer, nullable=False)
@@ -12,7 +11,8 @@ class Cart(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
     subtotal = db.Column(db.Float, nullable=False) 
 
-    def __init__(self, productId, price, quantity):
-        self.productId = productId
-        self.price = self.price 
-        self.subtotal = self.price * self.quantity
+    def __init__(self, product_id, price, quantity):
+        self.product_id = product_id
+        self.price = price 
+        self.quantity = quantity
+        self.subtotal = price * quantity 

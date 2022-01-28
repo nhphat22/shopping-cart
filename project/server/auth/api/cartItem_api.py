@@ -3,7 +3,9 @@ from flask.views import MethodView
 
 from project.server.database import db
 from project.server.jwt_helper import token_required
-from project.server.models.cart_model import Cart, Product, CartItem
+from project.server.models.cart_model import Cart
+from project.server.models.cartItem_model import CartItem
+from project.server.models.product_model import Product
 
 class AddToCartAPI(MethodView):
     """
@@ -19,9 +21,6 @@ class AddToCartAPI(MethodView):
                 cart = Cart(
                     user_id = current_user.id,
                     cartItems=[],
-                    total = 0,
-                    vat = 0,
-                    subtotal = 0,
                 )
                 # insert the user
                 db.session.add(cart)
@@ -29,7 +28,7 @@ class AddToCartAPI(MethodView):
             except Exception as e:
                 responseObject = {
                     'status': 'fail',
-                    'message': 'Some error occurred. Please try again.'
+                    'message': 'Some error occurred.'
                 }
                 return make_response(jsonify(responseObject)), 401
         else:
@@ -47,10 +46,14 @@ class AddToCartAPI(MethodView):
                         price = product.price,
                         quantity = post_data.get('quantity')
                     )
-                    cart.cartItems.append(cartItem)
+                    print(cartItem)
+                    db.session.add(cartItem)
+                    db.session.commit()
+                    cart.cartItems.append(cartItem.id)
                     responseObject = {
                         'status': 'success',
                         'data' : {
+                            'id': cartItem.id,
                             'name': product.name,
                             'quantity': post_data.get('quantity')
                         }
@@ -68,62 +71,44 @@ class UpdateQuantityAPI(MethodView):
     Update quantity of a cart's item
     """
     @token_required
-    def post(self, current_user):
-        post_data = request.get_json()
+    def put(self, current_user, item_id):
+        put_data = request.get_json()
         # check if prouduct already exist
-        product = Product.query.filter_by(name=post_data.get('product')).first()
-        if not product:
+        cartitem = CartItem.query.filter_by(id=item_id).first()
+        try: 
+            responseObject = {
+                'status': 'success',
+                'data' : {
+                    'id': cartitem.id,
+                    'quantity': put_data.get('quantity')
+                }
+            }
+            return make_response(jsonify(responseObject)), 201
+        except Exception as e:
             responseObject = {
                 'status': 'fail',
-                'message': 'We dont do that here. Choose another...'
+                'message': 'Some error occurred. Please try again.'
             }
-            return make_response(jsonify(responseObject)), 202
-        else:
-            try: 
-                responseObject = {
-                    'status': 'success',
-                    'data' : {
-                        'name': product.name,
-                        'quantity': post_data.get('quantity')
-                    }
-                }
-                return make_response(jsonify(responseObject)), 201
-            except Exception as e:
-                responseObject = {
-                    'status': 'fail',
-                    'message': 'Some error occurred. Please try again.'
-                }
-                return make_response(jsonify(responseObject)), 401
+            return make_response(jsonify(responseObject)), 401
 
 class RemoveFromCartAPI(MethodView):
     """
     Remove an item from cart
     """
     @token_required
-    def post(self, current_user):
-        post_data = request.get_json()
-        # check if prouduct already exist
-        product = Product.query.filter_by(name=post_data.get('product')).first()
-        if not product:
+    def delete(self, current_user, item_id):
+        try: 
+            CartItem.query.filter_by(id=item_id).delete()
+            # CartItem.query.filter(CartItem.id == item_id).delete()
+            responseObject = {
+                'status': 'success',
+                'message' : 'Removed'
+            }
+            return make_response(jsonify(responseObject)), 201
+        except Exception as e:
             responseObject = {
                 'status': 'fail',
-                'message': 'We dont do that here. Choose another...'
+                'message': 'Some error occurred. Please try again.'
             }
-            return make_response(jsonify(responseObject)), 202
-        else:
-            try: 
-                responseObject = {
-                    'status': 'success',
-                    'data' : {
-                        'name': product.name,
-                        'quantity': post_data.get('quantity')
-                    }
-                }
-                return make_response(jsonify(responseObject)), 201
-            except Exception as e:
-                responseObject = {
-                    'status': 'fail',
-                    'message': 'Some error occurred. Please try again.'
-                }
-                return make_response(jsonify(responseObject)), 401
-
+            return make_response(jsonify(responseObject)), 401
+            
