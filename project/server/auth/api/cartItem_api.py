@@ -20,7 +20,6 @@ class AddToCartAPI(MethodView):
             try:
                 cart = Cart(
                     user_id = current_user.id,
-                    cartItems=[],
                 )
                 # insert the user
                 db.session.add(cart)
@@ -42,14 +41,13 @@ class AddToCartAPI(MethodView):
             else:
                 try: 
                     cartItem = CartItem(
+                        cart_id = cart.id,
                         product_id = product.id,
                         price = product.price,
                         quantity = post_data.get('quantity')
                     )
-                    print(cartItem)
                     db.session.add(cartItem)
                     db.session.commit()
-                    cart.cartItems.append(cartItem.id)
                     responseObject = {
                         'status': 'success',
                         'data' : {
@@ -100,6 +98,7 @@ class RemoveFromCartAPI(MethodView):
         try: 
             CartItem.query.filter_by(id=item_id).delete()
             # CartItem.query.filter(CartItem.id == item_id).delete()
+            db.session.commit()
             responseObject = {
                 'status': 'success',
                 'message' : 'Removed'

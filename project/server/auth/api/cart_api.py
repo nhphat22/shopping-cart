@@ -24,7 +24,6 @@ class GetCartAPI(MethodView):
                     'status': 'success',
                     'data' : {
                         'id': cart.id,
-                        'cartItems': cart.cartItems,
                         'subtotal' : cart.subtotal,
                         'total': cart.total,
                         'vat': cart.vat
