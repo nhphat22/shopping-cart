@@ -74,11 +74,13 @@ class UpdateQuantityAPI(MethodView):
         # check if prouduct already exist
         cartitem = CartItem.query.filter_by(id=item_id).first()
         try: 
+            cartitem.update_quantity(put_data.get('quantity'))
+            db.session.commit()
             responseObject = {
                 'status': 'success',
                 'data' : {
                     'id': cartitem.id,
-                    'quantity': put_data.get('quantity')
+                    'quantity': cartitem.quantity
                 }
             }
             return make_response(jsonify(responseObject)), 201

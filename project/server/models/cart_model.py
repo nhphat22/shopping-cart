@@ -22,7 +22,11 @@ class Cart(db.Model):
 
     def __init__(self, user_id):
         self.user_id = user_id
-        self.total = 0 #!!!!!
-        self.vat = self.total * 0.1
-        self.subtotal = self.total + self.vat
-
+        self.subtotal = 0 
+        self.vat = self.subtotal * 0.1
+        self.total = self.subtotal + self.vat
+    
+    def update_cash(self, subtotal):
+        self.subtotal = subtotal
+        self.vat = self.subtotal * 0.1
+        self.total = self.subtotal + self.vat
