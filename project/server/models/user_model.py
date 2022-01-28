@@ -1,6 +1,7 @@
 import jwt
-from project.server.database import db
 from werkzeug.security import generate_password_hash
+
+from project.server.database import db
 
 class User(db.Model):
     """ User Model for storing user related details """

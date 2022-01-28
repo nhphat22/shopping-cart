@@ -1,12 +1,14 @@
 from project.server.database import db
 from sqlalchemy import Integer
-
+from project.server.models.user_model import User
 
 class Cart(db.Model):
     """ Cart Model for storing cartItems and subtotal """
     __tablename__ = "carts"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'),
+        nullable=False)
     cartItems = db.Column(db.ARRAY(Integer), nullable=False)
     total = db.Column(db.Float, nullable=False)
     vat = db.Column(db.Float, nullable=False)

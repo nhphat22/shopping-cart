@@ -7,7 +7,7 @@ class Cart(db.Model):
     __tablename__ = "carts"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    productId = db.Column(db.ARRAY(Integer), nullable=False)
+    product_id = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Float, nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     subtotal = db.Column(db.Float, nullable=False) 
@@ -15,4 +15,4 @@ class Cart(db.Model):
     def __init__(self, productId, price, quantity):
         self.productId = productId
         self.price = self.price 
-        self.subtotal = self.price*quantity
+        self.subtotal = self.price * self.quantity
