@@ -17,7 +17,6 @@ class User(db.Model):
     def __init__(self, userName, password, firstname='', lastName='', email='email@gmail.com'):
         self.userName = userName
         self.password = generate_password_hash(password)
-        self.password = password
         self.firstname = firstname
         self.lastName = lastName
         self.email = email
