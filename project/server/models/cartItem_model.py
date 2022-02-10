@@ -1,14 +1,17 @@
+from email.policy import default
 from project.server.database import db
+from sqlalchemy.dialects.postgresql import UUID
+from uuid import uuid4
 
 
 class CartItem(db.Model):
     """ CartItem Model for storing products in cart """
     __tablename__ = "cartitems"
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    cart_id =  db.Column(db.Integer, db.ForeignKey('carts.id'),
-        nullable=False)
-    product_id = db.Column(db.Integer, nullable=False)
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid4, nullable=False)
+    cart_id =  db.Column(UUID(as_uuid=True), db.ForeignKey('carts.id'), 
+                        default=uuid4, nullable=False)
+    product_id = db.Column(UUID(as_uuid=True), default=uuid4, nullable=False)
     price = db.Column(db.Float, nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     subtotal = db.Column(db.Float, nullable=False) 

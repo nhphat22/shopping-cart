@@ -3,6 +3,7 @@ from flask.views import MethodView
 from sqlalchemy import inspect
 
 from project.server.jwt_helper import token_required
+from project.server.database import db
 from project.server.models.cart_model import Cart
 from project.server.models.cartItem_model import CartItem
 
@@ -28,9 +29,10 @@ class GetCartAPI(MethodView):
             try: 
                 list_cart = CartItem.query.filter_by(cart_id=cart.id).all()
                 data = [object_as_dict(item) for item in list_cart]
-                for item in data:
-                    cart.subtotal += item['subtotal']
-                cart.update_cash(cart.subtotal)
+                # for item in data:
+                #     cart.subtotal += item['subtotal']
+                # cart.update_cash(cart.subtotal)
+                # db.session.commit()
                 responseObject = {
                     'status': 'success',
                     'data': {

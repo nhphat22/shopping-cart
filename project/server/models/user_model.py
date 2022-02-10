@@ -1,13 +1,17 @@
 import jwt
 from werkzeug.security import generate_password_hash
+from project.server.config import BaseConfig
+from sqlalchemy.dialects.postgresql import UUID
+from uuid import uuid4
 
 from project.server.database import db
 
+_config = BaseConfig()
 class User(db.Model):
     """ User Model for storing user related details """
     __tablename__ = "users"
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid4, nullable=False)
     userName = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
     firstName = db.Column(db.String(255))
@@ -28,11 +32,11 @@ class User(db.Model):
         """
         try:
             payload = {
-                'sub': user_id
+                'sub': user_id.hex
             }
             return jwt.encode(
                 payload,
-                'SECRET_KEY',
+                _config.SECRET_KEY,
                 algorithm='HS256'
             )
         except Exception as e:
@@ -48,7 +52,7 @@ class User(db.Model):
         try:
             payload = jwt.decode(
                 auth_token, 
-                'SECRET_KEY',
+                _config.SECRET_KEY,
                 algorithms='HS256'
             )
             is_blacklisted_token = BlacklistToken.check_blacklist(auth_token)

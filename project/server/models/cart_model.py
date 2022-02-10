@@ -1,15 +1,13 @@
 from project.server.database import db
-from sqlalchemy import Integer
-from project.server.models.user_model import User
+from sqlalchemy.dialects.postgresql import UUID
+from uuid import uuid4
 
 class Cart(db.Model):
     """ Cart Model for storing cartItems and subtotal """
     __tablename__ = "carts"
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'),
-        nullable=False)
-    # cartItems = db.Column(db.ARRAY(Integer), nullable=False)
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid4, nullable=False)
+    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.id'), nullable=False)
     cart_items = db.relationship(
         "CartItem",
         lazy="subquery",

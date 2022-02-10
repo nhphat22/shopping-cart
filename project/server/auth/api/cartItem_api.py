@@ -41,6 +41,7 @@ class AddToCartAPI(MethodView):
                 return make_response(jsonify(responseObject)), 202
             elif cartItem:
                 cartItem.update_quantity(post_data.get('quantity'))
+                cart.update_cash(cartItem.subtotal)
                 db.session.commit()
                 responseObject = {
                         'status': 'success',
@@ -56,6 +57,7 @@ class AddToCartAPI(MethodView):
                         quantity = post_data.get('quantity')
                     )
                     db.session.add(cartItem)
+                    cart.update_cash(cartItem.subtotal)
                     db.session.commit()
                     responseObject = {
                         'status': 'success',
