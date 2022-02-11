@@ -30,50 +30,49 @@ class AddToCartAPI(MethodView):
                     'message': 'Some error occurred.'
                 }
                 return make_response(jsonify(responseObject)), 401
-        else:
-            product = Product.query.filter_by(name=post_data.get('product')).first()
-            cartItem = CartItem.query.filter_by(product_id=product.id).first()
-            if not product:
-                responseObject = {
-                    'status': 'fail',
-                    'message': 'We dont do that here. Choose another...'
+        product = Product.query.filter_by(name=post_data.get('product')).first()
+        cartItem = CartItem.query.filter_by(product_id=product.id).filter_by(cart_id=cart.id).first()
+        if not product:
+            responseObject = {
+                'status': 'fail',
+                'message': 'We dont do that here. Choose another...'
+            }
+            return make_response(jsonify(responseObject)), 202
+        elif cartItem:
+            cartItem.update_quantity(cartItem.quantity+post_data.get('quantity'))
+            cart.update_cash(cartItem.subtotal)
+            db.session.commit()
+            responseObject = {
+                    'status': 'success',
+                    'message': 'Quantity of your product has updated!'
                 }
-                return make_response(jsonify(responseObject)), 202
-            elif cartItem:
-                cartItem.update_quantity(post_data.get('quantity'))
+            return make_response(jsonify(responseObject)), 201
+        else:
+            try: 
+                cartItem = CartItem(
+                    cart_id = cart.id,
+                    product_id = product.id,
+                    price = product.price,
+                    quantity = post_data.get('quantity')
+                )
+                db.session.add(cartItem)
                 cart.update_cash(cartItem.subtotal)
                 db.session.commit()
                 responseObject = {
-                        'status': 'success',
-                        'message': 'Quantity of your product has updated!'
+                    'status': 'success',
+                    'data' : {
+                        'id': cartItem.id,
+                        'name': product.name,
+                        'quantity': post_data.get('quantity')
                     }
+                }
                 return make_response(jsonify(responseObject)), 201
-            else:
-                try: 
-                    cartItem = CartItem(
-                        cart_id = cart.id,
-                        product_id = product.id,
-                        price = product.price,
-                        quantity = post_data.get('quantity')
-                    )
-                    db.session.add(cartItem)
-                    cart.update_cash(cartItem.subtotal)
-                    db.session.commit()
-                    responseObject = {
-                        'status': 'success',
-                        'data' : {
-                            'id': cartItem.id,
-                            'name': product.name,
-                            'quantity': post_data.get('quantity')
-                        }
-                    }
-                    return make_response(jsonify(responseObject)), 201
-                except Exception as e:
-                    responseObject = {
-                        'status': 'fail',
-                        'message': 'Some error occurred. Please try again.'
-                    }
-                    return make_response(jsonify(responseObject)), 401
+            except Exception as e:
+                responseObject = {
+                    'status': 'fail',
+                    'message': 'Some error occurred. Please try again.'
+                }
+                return make_response(jsonify(responseObject)), 401
 
 class UpdateQuantityAPI(MethodView):
     """
