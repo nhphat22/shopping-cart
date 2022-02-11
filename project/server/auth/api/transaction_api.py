@@ -1,12 +1,12 @@
-from distutils.command import config
-from flask import request, make_response, jsonify
+from flask import make_response, jsonify
 from flask.views import MethodView
 import requests
 from hashlib import md5
+import hmac
 import json
 
-from project.server.config import BaseConfig
 from project.server.database import db
+from project.server.config import BaseConfig
 from project.server.jwt_helper import token_required
 from project.server.models.cart_model import Cart
 from project.server.models.order_model import Order
@@ -19,7 +19,6 @@ class PaymentAPI(MethodView):
     @token_required
     def post(self, current_user):
         # get the post data
-        post_data = request.get_json()
         cart = Cart.query.filter_by(user_id=current_user.id).first()
         if not cart:
             responseObject = {
@@ -32,17 +31,23 @@ class PaymentAPI(MethodView):
             data = {
                 'merchantId': BaseConfig.MERCHANT_ID,
                 'amount': order.amount,
-                'extraData': order.id.hex
+                'extraData': str(order.id)
             }
             order.update_status("PROCESSED")
             db.session.commit()
-            signature = md5(json.dumps(data, sort_keys=True).encode('utf-8')).hexdigest()
+            hash_key='d46fbf37-5502-4e83-9b8c-ddd7427c9d88'
+            signature = hmac.new(hash_key.encode('utf-8'), json.dumps(data, sort_keys=True).encode('utf-8'), md5).hexdigest()
             data['signature'] = signature
-            print(data)
-            r = requests.post("http://localhost:8000/transaction/create", 
-                data = data)
+            r = requests.post("http://localhost:8000/transaction/create", data = data)
+            if 'data' not in r.json() or r.json()['data']['signature'] != signature:
+                responseObject = {
+                    'status': 'fail',
+                    'message': 'Security alert!'
+                }
+                return make_response(jsonify(responseObject)), 400
             responseObject = {
                 'status': 'success',
+                'data': data
             }
             return make_response(jsonify(responseObject)), 201
         

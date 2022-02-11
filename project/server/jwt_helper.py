@@ -1,7 +1,6 @@
 from flask import request, jsonify
 from functools import wraps
 import jwt
-from project.server import config
 
 from project.server.models.user_model import User
 from project.server.config import BaseConfig
