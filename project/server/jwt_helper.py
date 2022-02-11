@@ -6,7 +6,6 @@ from project.server import config
 from project.server.models.user_model import User
 from project.server.config import BaseConfig
 
-_config = BaseConfig()
 
 # decorator for verifying the JWT
 def token_required(f):
@@ -24,7 +23,7 @@ def token_required(f):
             # decoding the payload to fetch the stored details
             payload = jwt.decode(
                 auth_token, 
-                _config.SECRET_KEY,
+                BaseConfig.SECRET_KEY,
                 algorithms='HS256'
             )
             current_user = User.query.filter_by(id = payload['sub']).first()

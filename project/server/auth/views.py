@@ -4,6 +4,8 @@ from project.server.auth.api.product_api import AddProductAPI
 from project.server.auth.api.cart_api import GetCartAPI
 from project.server.auth.api.cartItem_api import AddToCartAPI, UpdateQuantityAPI, RemoveFromCartAPI
 from project.server.auth.api.order_api import CreateOrderAPI
+from project.server.auth.api.transaction_api import PaymentAPI
+
 
 
 auth_blueprint = Blueprint('auth', __name__)
@@ -18,6 +20,8 @@ update_view = UpdateQuantityAPI.as_view('update_api')
 remove_view = RemoveFromCartAPI.as_view('remove_api')
 cart_view = GetCartAPI.as_view('getcart_api')
 create_view = CreateOrderAPI.as_view('createorder_api')
+transaction_view = PaymentAPI.as_view('transaction_api')
+
 
 # add Rules for API Endpoints
 auth_blueprint.add_url_rule(
@@ -63,5 +67,10 @@ auth_blueprint.add_url_rule(
 auth_blueprint.add_url_rule(
     '/auth/<cart_id>/create',
     view_func=create_view,
+    methods=['POST']
+)
+auth_blueprint.add_url_rule(
+    '/auth/payment',
+    view_func=transaction_view,
     methods=['POST']
 )

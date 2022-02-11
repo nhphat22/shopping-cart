@@ -6,7 +6,6 @@ from uuid import uuid4
 
 from project.server.database import db
 
-_config = BaseConfig()
 class User(db.Model):
     """ User Model for storing user related details """
     __tablename__ = "users"
@@ -36,7 +35,7 @@ class User(db.Model):
             }
             return jwt.encode(
                 payload,
-                _config.SECRET_KEY,
+                BaseConfig.SECRET_KEY,
                 algorithm='HS256'
             )
         except Exception as e:
@@ -52,7 +51,7 @@ class User(db.Model):
         try:
             payload = jwt.decode(
                 auth_token, 
-                _config.SECRET_KEY,
+                BaseConfig.SECRET_KEY,
                 algorithms='HS256'
             )
             is_blacklisted_token = BlacklistToken.check_blacklist(auth_token)
