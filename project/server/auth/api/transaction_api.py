@@ -1,4 +1,3 @@
-from socket import herror
 from flask import make_response, jsonify
 from flask.views import MethodView
 import requests
@@ -49,7 +48,6 @@ class PaymentAPI(MethodView):
             }
             r = requests.post("http://localhost:8000/transaction/create", headers=headers, data=data)
 
-            print(r.json())
             if 'data' not in r.json() or r.json()['data']['signature'] != signature:
                 responseObject = {
                     'status': 'fail',
