@@ -6,7 +6,7 @@ database_name = 'shopping_cart'
 
 class BaseConfig:
     """Base configuration."""
-    SECRET_KEY = os.getenv('SECRET_KEY', 'my_precious')
+    SECRET_KEY = os.getenv('SECRET_KEY', 'd46fbf37-5502-4e83-9b8c-ddd7427c9d88')
     DEBUG = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     MERCHANT_ID = '7407b078-f960-42d0-9a09-d49ed7c69f58'
